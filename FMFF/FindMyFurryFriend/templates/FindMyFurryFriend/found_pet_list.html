@@ -1,0 +1,30 @@
+<!-- FindMyFurryFriend/templates/FindMyFurryFriend/found_pet_list.html -->
+{% extends "FindMyFurryFriend/base.html" %}
+
+{% block title %}Find My Furry Friend{% endblock %}
+{% block header %}
+<a href="{% url 'found_pet_list' %}">Find My Furry Friend</a>
+{% endblock %}
+
+{% block content %}
+
+<form method="get">
+    {{ filter.form.as_p }}
+    <button type="submit">Filter</button>
+</form>
+<ul>
+    {% for pet in filter.qs %}
+    <li>
+        <a href="{% url 'found_pet_detail' pet.id %}">{{ pet.species }}</a>
+    </li>
+    {% empty %}
+    <li>No results found.</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'add_found_pet' %}">Add a Found Pet</a>
+<div> 
+    <a href="{% url 'landing' %}">Back to Home</a>  
+</div>
+{% endblock %}
+

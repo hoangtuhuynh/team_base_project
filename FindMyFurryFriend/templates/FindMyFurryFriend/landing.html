@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find My Furry Friend</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;            height: 100vh;
+        }
+
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            padding: 12px 20px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            display: inline-block;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        /* Add new styles for notifications */
+        #notification-container {
+            margin-top: 30px;
+        }
+
+        .notification {
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <!-- Add the WebSocket script -->
+    <script>
+        const socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            // Check if the received message is a notification
+            if (data.type === 'notification') {
+                // Display the notification in the UI
+                displayNotification(data.message);
+            }
+        };
+
+        function displayNotification(message) {
+            // Find the notification container in the HTML
+            const notificationContainer = document.getElementById('notification-container');
+
+            // Create a new div element to hold the notification message
+            const notificationDiv = document.createElement('div');
+            notificationDiv.classList.add('notification');
+            notificationDiv.innerText = message;
+
+            // Append the new div to the notification container
+            notificationContainer.appendChild(notificationDiv);
+        }
+    </script>
+
+</head>
+<body>
+    <h1>Find My Furry Friend</h1>
+    <p>Are you here for:</p>
+    <ul>
+        <li><a href="{% url 'lost_pet_list' %}">Lost Pet</a></li>
+        <li><a href="{% url 'found_pet_list' %}">Found Pet</a></li>
+        <li><a href="{% url 'emergency_contacts_list' %}">View Emergency Contacts</a></li>
+    </ul>
+</body>
+</html>

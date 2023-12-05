@@ -1,0 +1,21 @@
+<!-- FindMyFurryFriend/templates/FindMyFurryFriend/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Website{% endblock %}</title>
+</head>
+<body>
+<header>
+    <h1>{% block header %}
+        <a href="{% url 'lost_pet_list' %}">Find My Furry Friend</a>
+    {% endblock %}</h1>
+</header>
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+<footer>
+    &copy; {% now "Y" %} My Website
+</footer>
+</body>
+</html>

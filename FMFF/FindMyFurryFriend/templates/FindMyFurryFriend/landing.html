@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Find My Furry Friend</title>
+</head>
+<body>
+    <h1>Find My Furry Friend</h1>
+    <p>Are you here for:</p>
+    <ul>
+        <li><a href="{% url 'lost_pet_list' %}">Lost Pet</a></li>
+        <li><a href="{% url 'found_pet_list' %}">Found Pet</a></li>
+        <li><a href="{% url 'emergency_contacts_list' %}">View Emergency Contacts</a></li>
+    </ul>
+</body>
+</html>

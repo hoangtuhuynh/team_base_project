@@ -1,0 +1,267 @@
+<!-- FindMyFurryFriend/templates/FindMyFurryFriend/add_lost_pet.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Lost Pet</title>
+    <!-- Include Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, textarea, select {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #28a745;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+    </style>
+
+    <!-- Add switch -->
+    <style>
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 30px; /* Rounded corners */
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px; /* Adjusted height */
+            width: 22px; /* Adjusted width */
+            left: 2px; /* Adjusted left position */
+            bottom: 2px; /* Adjusted bottom position */
+            background-color: white;
+            border-radius: 50%; /* Circle shape */
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4CAF50; /* Green color when checked */
+        }
+        
+        input:focus + .toggle-slider {
+            box-shadow: 0 0 1px #4CAF50; /* Green shadow when focused */
+        }
+        
+        input:checked + .toggle-slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+        
+        /* Updated rounded styles */
+        .slider.round {
+            border-radius: 34px;
+        }
+        
+        .slider.round:before {
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Add a Lost Pet</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="species">Species:</label>
+        <input type="text" name="species" id="species">
+
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name">
+
+        <label for="description">Description:</label>
+        <textarea name="description" id="description"></textarea>
+
+        <!-- Input field for uploading an image -->
+        <label for="image">Image:</label>
+        <input type="file" name="image" id="image">
+
+        <div>
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
+            <input type="hidden" name="ip_address" id="ip_address">
+        </div>
+
+        <!-- Location input fields -->
+        <div class="toggle-switch-container">
+            <label for="agree_to_share_location">Agree to Share Location</label>
+            <div class="toggle-switch">
+                <input type="checkbox" name="agree_to_share_location" id="agree_to_share_location">
+                <label class="toggle-slider" for="agree_to_share_location"></label>
+            </div>
+        </div>
+
+        <div id="map" style="width: 100%; height: 300px;"></div>
+
+        <script>
+            var map = L.map('map').setView([0, 0], 2);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+            function updateMarker(lat, lon) {
+                // Remove previous marker
+                map.eachLayer(function (layer) {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+        
+                // Add a new marker to the map
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup('Marker Popup Content');
+            }
+
+            function getUserLocation() {
+                if ($("#agree_to_share_location").prop("checked")) {
+                    if ("geolocation" in navigator) {
+                        console.log("geolocation available");
+        
+                        // Attempt to get the current position
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                const lat = position.coords.latitude;
+                                const lon = position.coords.longitude;
+                                console.log("Latitude:", lat);
+                                console.log("Longitude:", lon);
+
+                                // Check if the map is already initialized
+                                if (!map) {
+                                    // Map initialization
+                                    map = L.map('map').setView([lat, lon], 15);
+                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                                } else {
+                                    // Remove previous marker if it exists
+                                    map.eachLayer((layer) => {
+                                        if (layer instanceof L.Marker) {
+                                            map.removeLayer(layer);
+                                        }
+                                    });
+                                }
+
+                                // Add the marker
+                                L.marker([lat, lon]).addTo(map)
+                                    .bindPopup('Marker Popup Content');
+                
+                                // Set the latitude and longitude values in the form
+                                document.getElementById("latitude").value = lat;
+                                document.getElementById("longitude").value = lon;
+
+                                //Zoom in after the location marked
+                                map.setView([lat, lon], 20);
+                            },
+                            (error) => {
+                                console.error("Error getting location:", error);
+                            }
+                        );
+                    } else {
+                        console.log("geolocation not available");
+                    }
+                } else {
+                    // Handle case where the user doesn't want to share location
+                    console.log("User opted not to share location.");
+                }
+            }
+        </script>
+        
+
+        <!-- Button to trigger location retrieval -->
+        <button type="button" onclick="getUserLocation()">Get Location</button>
+
+
+        <input type="submit" value="Add Pet">
+        
+        <script>
+            const socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
+        
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('Received message:', data.message);
+
+                // Handle the incoming message (e.g., show a notification)
+                console.log(data.message);
+
+                // Add logic to update UI and acknowledge receipt
+                acknowledgeReceipt(data.messageId);
+            };
+
+            function acknowledgeReceipt(messageId) {
+                // Send acknowledgment to the server
+                socket.send(JSON.stringify({ type: 'ack', messageId }));
+            }
+
+        </script>
+    </form>
+</div>
+
+</body>
+</html>

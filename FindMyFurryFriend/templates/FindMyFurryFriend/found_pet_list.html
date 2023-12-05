@@ -1,0 +1,271 @@
+{% extends "FindMyFurryFriend/base.html" %}
+
+{% block title %}Find My Furry Friend{% endblock %}
+
+{% block header %}
+    <h1>Find My Furry Friend</h1>
+{% endblock %}
+
+{% block content %}
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .filter-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .pet-list {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .pet-card {
+            width: 300px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        .pet-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .comment-section {
+            margin-top: 10px;
+        }
+
+        .comment-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .comment-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+
+        .comment-form {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-form label {
+            margin-right: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .filter-form select {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .filter-form button {
+            padding: 10px;
+            margin-left: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .filter-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .add-pet-btn,
+        .back-to-home-btn {
+            display: inline-block;
+            padding: 10px;
+            margin-bottom: 10px;
+            margin-left: 10px;
+            text-decoration: none;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .add-pet-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .add-pet-btn:hover {
+            background-color: #218838;
+        }
+
+        .back-to-home-btn {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .back-link a:hover {
+            background-color: #5a6268;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .comment-form button {
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .comment-form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .pet-card {
+                width: 100%;
+            }
+        }
+
+        .pet-card {
+            width: 200px; /* Adjust the width to your preference */
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+    
+        .pet-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+
+    <form method="get" class="filter-form">
+        {{ filter.form.as_p }}
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <div class="pet-list">
+        {% for pet in found_pets %}
+            <div class="pet-card">
+                <h3><a href="{% url 'found_pet_detail' pet.id %}" class="pet-link">{{ pet.species }}</a></h3>
+
+                <!-- Display the image -->
+                {% if pet.image %}
+                    <div class="pet-image">
+                        <img src="{{ pet.image.url }}" alt="{{ pet.species }}">
+                    </div>
+                {% endif %}
+
+                <!-- Display comments for each pet -->
+                <div class="comment-section">
+                    <ul class="comment-list">
+                        {% for comment in pet.comments.all %}
+                            <li class="comment-item">{{ comment.user }}: {{ comment.text }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Add comment button and form for each pet -->
+                <button class="btn btn-primary show-comment-form">Add Comment</button>
+                <form method="post" action="#" class="comment-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="pet_id" value="{{ pet.id }}">
+                    <div class="form-group">
+                        <textarea class="form-control" name="comment" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Comment</button>
+                </form>
+            </div>
+        {% empty %}
+            <p>No results found.</p>
+        {% endfor %}
+    </div>
+
+    <div class="button-container">
+        <a href="{% url 'add_found_pet' %}" class="btn btn-success add-pet-btn">Add a Found Pet</a>
+        <a href="/home" class="btn btn-secondary back-to-home-btn">Back to Home</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const commentButtons = document.querySelectorAll('.show-comment-form');
+            commentButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const commentForm = this.nextElementSibling;
+                    commentForm.style.display = commentForm.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+
+            const commentForms = document.querySelectorAll('.comment-form');
+            commentForms.forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault(); // Prevent the default form submission
+
+                    // Get the form data
+                    const formData = new FormData(this);
+
+                    // Use JavaScript to update the UI with the new comment
+                    const petId = formData.get('pet_id');
+                    const commentText = formData.get('comment');
+                    const commentList = this.parentElement.querySelector('.comment-list');
+                    const newCommentItem = document.createElement('li');
+                    newCommentItem.className = 'comment-item';
+                    newCommentItem.textContent = commentText;
+                    commentList.appendChild(newCommentItem);
+
+                    // Clear the comment input
+                    this.querySelector('textarea').value = '';
+                });
+            });
+        });
+    </script>
+{% endblock %}
